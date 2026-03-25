@@ -11,9 +11,11 @@ jobs:
   frontend:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -25,16 +27,32 @@ jobs:
         run: node server.js & sleep 5
         working-directory: frontend
 
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build Docker image (frontend)
         run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/volleyball-frontend:latest frontend
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/volleyball-frontend:latest
+
+      - name: Push frontend image
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/volleyball-frontend:latest
 
   backend:
     runs-on: ubuntu-22.04
     needs: frontend
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -46,21 +64,19 @@ jobs:
         run: python app.py & sleep 5
         working-directory: backend
 
-      - name: Build Docker image (backend)
-        run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/volleyball-backend:latest backend
-
-  docker-push:
-    runs-on: ubuntu-22.04
-    needs: [frontend, backend]
-    steps:
       - name: Login to DockerHub
         uses: docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push frontend image
-        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/volleyball-frontend:latest
+      - name: Build Docker image (backend)
+        run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/volleyball-backend:latest backend
+
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/volleyball-backend:latest
 
       - name: Push backend image
         run: docker push ${{ vars.DOCKERHUB_USERNAME }}/volleyball-backend:latest
