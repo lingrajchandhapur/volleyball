@@ -3,7 +3,7 @@ name: volleyball-game
 on:
   push:
     branches:
-      - volley
+      - master
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
