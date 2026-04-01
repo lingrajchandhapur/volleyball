@@ -119,13 +119,14 @@ jobs:
     environment: DEVOPS
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v2
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=volleyball
+            -Dsonar.organization=ramankrishnan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
        
