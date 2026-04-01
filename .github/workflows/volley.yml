@@ -114,19 +114,20 @@ jobs:
 
 
   sonarqube:
-    runs-on: ubuntu-22.04
-    needs: backend
-    environment: DEVOPS
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: backend   # ✅ runs after backend
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: SonarCloud Scan
+      - name: SonarQube Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=kannan1_kannan1
-            -Dsonar.organization=kannan1
+            -Dsonar.projectKey=YOUR_PROJECT_KEY
+            -Dsonar.organization=YOUR_ORG
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-       
