@@ -1,52 +1,84 @@
 name: volleyball-game
-on:
-push:
-branches:
-- master
 
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-frontend:
-runs-on: ubuntu-22.04
-environment: DEVOPS
-steps:
-- uses: actions/checkout@v4
-# 🔥 CACHE NODE MODULES
-- name: Cache npm
-uses: actions/cache@v3
-with:
-path: ~/.npm
-key: npm-${{ hashFiles('frontend/package-lock.json') }}
-- name: Setup Node.js
-uses: actions/setup-node@v4
-with:
-node-version: '18'
-- name: Install frontend dependencies
-run: npm install
-working-directory: frontend
-- name: Verify frontend server starts
-run: node server.js & sleep 5
-working-directory: frontend
 
-backend:
-runs-on: ubuntu-22.04
-needs: frontend
-environment: DEVOPS
-steps:
-- uses: actions/checkout@v4
-# 🔥 CACHE PYTHON
-- name: Cache pip
-uses: actions/cache@v3
-with:
-path: ~/.cache/pip
-key: pip-${{ hashFiles('backend/requirements.txt') }}
-- name: Setup Python
-uses: actions/setup-python@v5
-with:
-python-version: '3.10'
-- name: Install backend dependencies
-run: pip install -r requirements.txt
-working-directory: backend
-- name: Verify backend server starts
-run: python app.py & sleep 5
-working-directory: backend
+  frontend:
+    runs-on: ubuntu-22.04
+    environment: DEVOPS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 🔥 Cache npm
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('frontend-node/package-lock.json') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend-node
+
+      - name: Verify frontend server starts
+        run: node server.js & sleep 5
+        working-directory: frontend-node
+
+
+  backend:
+    runs-on: ubuntu-22.04
+    needs: frontend
+    environment: DEVOPS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 🔥 Cache pip
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('backend-python/requirements.txt') }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install backend dependencies
+        run: pip install -r requirements.txt
+        working-directory: backend-python
+
+      - name: Verify backend server starts
+        run: python app.py & sleep 5
+        working-directory: backend-python
+
+
+  sonarqube:
+    runs-on: ubuntu-22.04
+    needs: backend
+    environment: DEVOPS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v2
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
