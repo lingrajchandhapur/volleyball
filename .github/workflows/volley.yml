@@ -86,6 +86,23 @@ uses: aquasecurity/trivy-action@master
 with:
 image-ref: ${{ env.DOCKERHUB_USERNAME }}/volleyball-backend:${{ env.IMAGE_TAG }}
 - name: Push backend image
+
+sonarqube:
+    runs-on: ubuntu-22.04
+    needs: backend
+    environment: DEVOPS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v2
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
 run: |
 docker push $DOCKERHUB_USERNAME/volleyball-backend:$IMAGE_TAG
 docker push $DOCKERHUB_USERNAME/volleyball-backend:latest
