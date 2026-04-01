@@ -125,8 +125,8 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=volleyball-1
-            -Dsonar.organization=ramankrishnan
+            -Dsonar.projectKey=kannan1_kannan1
+            -Dsonar.organization=kannan1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
        
