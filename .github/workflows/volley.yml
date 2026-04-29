@@ -3,7 +3,7 @@ name: cricket-tournament
 on:
   push:
     branches:
-      - master  # change to master if needed
+      - main  # change to master if needed
 
 jobs:
 
